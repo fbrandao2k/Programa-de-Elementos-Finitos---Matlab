@@ -1,0 +1,181 @@
+%------------------------------------------------------------------
+% Plot2DElementsAndNodes plots all elements and nodes, including the
+% supports and the forces.
+% It receives the following parameters:
+% nodecoordinates: all node coordinates
+% elemNodes: the nodes of each element
+% xAxis: value of x max and min to be ploted all the figure. Ex: xAxis = [-5,5]
+% yAxis: value of y max and min to be ploted all the figure. Ex: yAxis = [-5,5]
+% typeProblem: string with the type of the problem to be solved. Ex:
+% "problem1", "problem2", "problem3"
+function Plot2DElementsAndNodes(nodecoordinates, elemNodes, elemat)%, xAxis, yAxis, typeProblem)
+    nel = length(elemNodes) ;                  % number of elements
+    nnode = length(nodecoordinates) ;          % total number of nodes in system
+    
+    %counting the number of bars, tri and quad
+    nbars = 0;
+    ntris = 0;
+    nquads = 0;
+    for i=1:nel
+       if strcmp( elemat{1,i}(1), 'bar')
+           nbars = nbars+1;
+       elseif strcmp( elemat{1,i}(1), 'tri')
+           ntris = ntris+1;
+       elseif strcmp( elemat{1,i}(1), 'quad')
+           nquads = nquads+1;
+       end
+    end
+    
+    %plotting triangles
+    if ntris>0
+        X(3, ntris) = 0;
+        Y(3, ntris) = 0;
+        for iel = 1:nel
+            if strcmp( elemat{1,iel}(1), 'tri')
+                nnel = 3;
+                for i = 1:nnel
+                    node(i) = elemNodes{1,iel}(i);
+                    X(i, iel) = nodecoordinates{1,node(i)}(1);
+                    Y(i, iel) = nodecoordinates{1,node(i)}(2);
+                end
+            end
+
+        end
+        plot(X,Y, 'k');
+        fill(X,Y,[0.6 0.6 0.6 ]);
+        clear X Y node
+    end
+    
+    
+    %plotting quads
+    if nquads>0
+        X(4, nquads) = 0;
+        Y(4, nquads) = 0;
+        for iel = 1:nel
+            if strcmp( elemat{1,iel}(1), 'quad')
+                nnel = 4;
+                for i = 1:nnel
+                    node(i) = elemNodes{1,iel}(i);
+                    X(i, iel) = nodecoordinates{1,node(i)}(1);
+                    Y(i, iel) = nodecoordinates{1,node(i)}(2);
+                end
+            end
+
+        end
+        plot(X,Y, 'k');
+        fill(X,Y,[0.6 0.6 0.6 ]);
+    end
+    
+    %plotting bars
+    if nbars>0
+        X(2, nbars) = 0;
+        Y(2, nbars) = 0;
+        for iel = 1:nel
+            if strcmp( elemat{1,iel}(1), 'bar')
+                nnel = 2;
+                for i = 1:nnel
+                    node = elemNodes{1,iel}(i);
+                    X(i, iel) = nodecoordinates{1,node}(1);
+                    Y(i, iel) = nodecoordinates{1,node}(2);
+                end
+            end
+
+        end
+        plot(X,Y,'k', 'LineWidth',2)
+        clear X Y;
+    end
+    
+    for i = 1:nnode
+        
+     
+     
+                    %circle( X(i, iel), Y(i, iel), 0.05, 'k');
+                    %text( X(:, ntris)-0.2, Y(:, ntris), int2str(node(:)),'fontsize',12,'color','k');
+                    
+     %title('Finite Element Mesh') ;
+     %axis off ;
+     %k = nodes(:,1:end);
+     %nd = k' ;
+    %for i = 1:nel
+    % text(X(:,i),Y(:,i),int2str(nd(:,i)),'fontsize',8,'color','k');
+    % text(sum(X(:,i))/4,sum(Y(:,i))/4,int2str(i),'fontsize',10,'color','r') ;
+    %end        
+       %} 
+        
+end
+
+
+%% Class (static) auxiliary functions
+        %------------------------------------------------------------------
+        % Plots a square with defined center coordinates, side length and
+        % color.
+        % This method is used to draw nodal points and rotation constraints
+        % on 2D models.
+        % Input arguments:
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  l: side length
+        %  c: color (RGB vector)
+        function square(x,y,l,c)
+            X = [x - l/2, x + l/2, x + l/2, x - l/2];
+            Y = [y - l/2, y - l/2, y + l/2, y + l/2];
+            fill(X, Y, c);
+        end
+        
+        %------------------------------------------------------------------
+        % Plots a triangle with defined top coordinates, height, base,
+        % orientation, and color.
+        % This method is used to draw translation constraints on 2D models.
+        % Input arguments:
+        %  x: top coordinate on the X axis
+        %  y: top coordinate on the Y axis
+        %  h: triangle height
+        %  b: triangle base
+        %  ang: angle (in radian) between the axis of symmetry and the
+        %       horizontal direction (counterclockwise) - 0 rad when
+        %       triangle is pointing left
+        %  c: color (RGB vector)
+        function triangle(x,y,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+            X = [x, x + h * cx + b/2 * cy, x + h * cx - b/2 * cy];
+            Y = [y, y + h * cy - b/2 * cx, y + h * cy + b/2 * cx];
+            fill(X, Y, c);
+        end
+        
+        %------------------------------------------------------------------
+        % Plots a circle with defined center coordinates, radius and color.
+        % This method is used to draw hinges on 2D models.
+        % Input arguments:
+        %  x: center coordinate on the X axis
+        %  y: center coordinate on the Y axis
+        %  r: circle radius
+        %  c: color (RGB vector)
+        function circle(x,y,r,c)
+            circ = 0 : pi/50 : 2*pi;
+            xcirc = x + r * cos(circ);
+            ycirc = y + r * sin(circ);
+            plot(xcirc, ycirc, 'color', c);
+        end
+        
+        %------------------------------------------------------------------
+        % Plots an arrow with defined beggining coordinates, length,
+        % arrowhead height, arrowhead base, orientation, and color.
+        % This method is used to draw load symbols on 2D models.
+        % Input arguments:
+        %  x: beggining coordinate on the X axis
+        %  y: beggining coordinate on the Y axis
+        %  l: arrow length
+        %  h: arrowhead height
+        %  b: arrowhead base
+        %  ang: pointing direction (angle in radian with the horizontal
+        %       direction - counterclockwise) - 0 rad when pointing left
+        %  c: color (RGB vector)
+        function arrow2D(x,y,l,h,b,ang,c)
+            cx = cos(ang);
+            cy = sin(ang);
+            X = [x, x + l * cx];
+            Y = [y, y + l * cy];
+            line(X, Y, 'Color', c);
+            CrossDraw.triangle(x, y, h, b, ang, c);
+        end
